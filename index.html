@@ -124,7 +124,9 @@
             .card { border: 1px solid #CBD5E1; padding: 15px; margin-bottom: 15px; box-shadow: none; }
             th { background-color: var(--megalabs-green-dark) !important; color: white !important; -webkit-print-color-adjust: exact; }
             input, select { border: none !important; background: transparent !important; padding: 0 !important; font-weight: bold; }
-            .email-domain { background: transparent; border: none; padding: 0; }
+            .email-input-group { display: inline-flex; align-items: center; width: 100%; }
+            .email-input-group input { width: auto !important; flex: 1 1 auto !important; border: none !important; padding: 0 !important; background: transparent !important; }
+            .email-domain { background: transparent !important; border: none !important; padding: 0 !important; margin-left: 0 !important; display: inline !important; color: #1E293B !important; font-weight: bold !important; }
         }
     </style>
 </head>
@@ -239,6 +241,43 @@
                 <button id="btnAdicionar" class="btn btn-green-light" onclick="adicionarProduto()">+ Adicionar Item ao Pedido</button>
             </div>
 
+                        <!-- COMBOS PROMOCIONAIS -->
+            <div class="card no-print" style="background: #F0FDF4; border: 1px solid #BBF7D0;">
+                <div class="card-header" style="color: #166534; border-left-color: #22C55E;">Combos Promocionais e Regras do Banco de Dados</div>
+                <div style="overflow-x: auto;">
+                    <table style="background: #ffffff; border-radius: 6px; overflow: hidden; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #166534; color: #ffffff;">
+                                <th style="width: 22%;">Nome do Combo</th>
+                                <th style="width: 48%;">Produtos Participantes (Linhas / Apresentações)</th>
+                                <th style="width: 15%;">Requisito Mínimo</th>
+                                <th style="width: 15%;">Benefício</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Combo Binelli & Penetro</strong></td>
+                                <td>GOTAS BINELLI 10ML, PENETRO GEL 30G, PENETRO INAL 45ML, PENETRO SPRAY 50ML</td>
+                                <td>≥ 12 un. totais<br><small style="color:#64748b;">(mín. 2 un. por item)</small></td>
+                                <td><span class="badge-tipo badge-liberado">30% Desconto</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Combo Malvatricin Linha</strong></td>
+                                <td>MALVATRICIN SOLUÇÃO 100ML, SPRAY 50ML, HA FRESH SPRAY/SOLUÇÃO MENTA, HA SPRAY/SOLUÇÃO FRAMBOESA</td>
+                                <td>≥ 12 un. totais<br><small style="color:#64748b;">(mín. 2 un. por item)</small></td>
+                                <td><span class="badge-tipo badge-liberado">30% Desconto</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Combo Xarelto Completo</strong></td>
+                                <td>XARELTO (10mg 10/30 CPR, 15mg 28 CPR, 2,5mg 30/60 CPR / TAFI BLI 28/56, 20mg 28 CPR)</td>
+                                <td>≥ 6 un. totais<br><small style="color:#64748b;">(todas apresentações)</small></td>
+                                <td><span class="badge-tipo badge-liberado">Condição Especial</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- TABELA DE ITENS NO PEDIDO -->
             <div class="card">
                 <div class="card-header">3. Itens do Pedido</div>
@@ -284,16 +323,16 @@
                 <div class="grid-3">
                     <div class="form-group">
                         <label for="repNome">Representante</label>
-                        <input type="text" id="repNome" placeholder="Digite o nome do representante" value="Thiago Francisco Aleixo" maxlength="30">
+                        <input type="text" id="repNome" placeholder="Digite o nome do representante" value=" " maxlength="30">
                     </div>
                     <div class="form-group">
                         <label for="repTelefone">Telefone</label>
-                        <input type="text" id="repTelefone" placeholder="(00) 00000-0000" value="(31) 98765-4321" maxlength="30">
+                        <input type="text" id="repTelefone" placeholder="(00) 00000-0000" value=" " maxlength="30">
                     </div>
                     <div class="form-group">
                         <label for="repEmailUser">Email</label>
                         <div class="email-input-group">
-                            <input type="text" id="repEmailUser" placeholder="nome.sobrenome" value="taleixo" maxlength="30">
+                            <input type="text" id="repEmailUser" placeholder="nome.sobrenome" value=" " maxlength="50">
                             <span class="email-domain">@megalabsbrasil.com.br</span>
                         </div>
                     </div>
@@ -584,6 +623,9 @@
 
         function limparTudo() {
             itensPedido = [];
+            document.getElementById('repNome').value = ' ';
+            document.getElementById('repTelefone').value = ' ';
+            document.getElementById('repEmailUser').value = ' ';
             atualizarTabela();
         }
 
@@ -596,7 +638,7 @@
             let testResults = [];
 
             testResults.push({ name: "Etapa 1: Validação de PWA Manifest & Service Worker", pass: !!('serviceWorker' in navigator) });
-            testResults.push({ name: "Etapa 2: Validação do Limite de 50 Caracteres no Email do Representante", pass: (document.getElementById('repEmailUser').getAttribute('maxlength') === "50") });
+            testResults.push({ name: "Etapa 2: Validação do Limite de 50 Caracteres no Email do Representante", pass: (document.getElementById('repEmailUser').maxLength === 50 || document.getElementById('repEmailUser').getAttribute('maxlength') === "50") });
             testResults.push({ name: "Etapa 3: Validação do Motor de Combos e Descontos", pass: true });
 
             log.innerHTML = testResults.map(t => `<div class="${t.pass ? 'test-pass' : 'test-fail'}">${t.pass ? '✔ PASS' : '✖ FAIL'} - ${t.name}</div>`).join('');
