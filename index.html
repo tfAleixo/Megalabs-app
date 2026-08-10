@@ -241,7 +241,7 @@
                 <button id="btnAdicionar" class="btn btn-green-light" onclick="adicionarProduto()">+ Adicionar Item ao Pedido</button>
             </div>
 
-            <!-- TABELA DE ITENS NO PEDIDO -->
+                        <!-- TABELA DE ITENS NO PEDIDO -->
             <div class="card">
                 <div class="card-header">3. Itens do Pedido</div>
                 <table>
@@ -283,7 +283,7 @@
             <!-- DADOS DO REPRESENTANTE COMERCIAL -->
             <div class="card">
                 <div class="card-header">4. Contato do Representante Comercial</div>
-                <div class="grid-3">
+                <div style="display: grid; grid-template-columns: 0.6fr 0.6fr 1.2fr; gap: 15px;">
                     <div class="form-group">
                         <label for="repNome">Representante</label>
                         <input type="text" id="repNome" placeholder="Digite o nome do representante" value=" " maxlength="30">
@@ -294,10 +294,7 @@
                     </div>
                     <div class="form-group">
                         <label for="repEmailUser">Email</label>
-                        <div class="email-input-group">
-                            <input type="text" id="repEmailUser" placeholder="nome.sobrenome" value=" " maxlength="50">
-                            <span class="email-domain">@megalabsbrasil.com.br</span>
-                        </div>
+                        <input type="email" id="repEmailUser" placeholder="nome.sobrenome@megalabsbrasil.com.br" value=" " maxlength="80">
                     </div>
                 </div>
 
