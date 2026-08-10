@@ -1,0 +1,21 @@
+{
+  "short_name": "Megalabs MEC",
+  "name": "Portal de Pedidos Comerciais - Megalabs",
+  "icons": [
+    {
+      "src": "megalabs_logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "megalabs_logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#006B3F",
+  "theme_color": "#006B3F",
+  "display": "standalone",
+  "orientation": "portrait"
+}

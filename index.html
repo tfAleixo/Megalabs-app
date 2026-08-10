@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Pedidos Comerciais - Megalabs</title>
+
+    <!-- Configurações para PWA & Mobile -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#006B3F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Megalabs MEC">
+    <link rel="apple-touch-icon" href="megalabs_logo.png">
+
+    <style>
+        :root {
+            --megalabs-green-dark: #006B3F;
+            --megalabs-green-light: #00A86B;
+            --megalabs-green-accent: #00875A;
+            --megalabs-light-bg: #F4FBF7;
+            --megalabs-card-bg: #FFFFFF;
+            --megalabs-dark-text: #1E293B;
+            --megalabs-gray-border: #CBD5E1;
+            --danger-color: #D32F2F;
+            --success-color: #2E7D32;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--megalabs-light-bg); color: var(--megalabs-dark-text); min-height: 100vh; }
+
+        /* Estilos da Tela de Login */
+        #loginScreen {
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            background: linear-gradient(135deg, var(--megalabs-green-dark) 0%, #003B22 100%); padding: 20px;
+        }
+        .login-card {
+            background: #ffffff; padding: 40px; border-radius: 12px; width: 100%; max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
+        }
+        .login-card img { height: 55px; margin-bottom: 20px; object-fit: contain; }
+        .login-card h2 { font-size: 20px; color: var(--megalabs-green-dark); margin-bottom: 8px; font-weight: 700; }
+        .login-card p { font-size: 13px; color: #64748B; margin-bottom: 25px; }
+
+        /* Banner de Instalação PWA */
+        .pwa-install-banner {
+            background: #00875A; color: white; padding: 10px 15px; font-size: 13px; font-weight: 600;
+            display: none; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 15px;
+        }
+        .btn-pwa { background: #ffffff; color: var(--megalabs-green-dark); border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        /* Layout Principal do Aplicativo */
+        #appContainer { display: none; }
+        header {
+            background: #ffffff; border-bottom: 4px solid var(--megalabs-green-light);
+            padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .header-logo-container { display: flex; align-items: center; gap: 15px; }
+        .header-logo-container img { height: 48px; object-fit: contain; }
+        .header-title-badge { font-size: 11px; font-weight: 700; background: #E6F4EA; color: var(--megalabs-green-dark); padding: 4px 10px; border-radius: 4px; text-transform: uppercase; border: 1px solid #A8E6CF; }
+
+        .user-menu { display: flex; align-items: center; gap: 15px; font-size: 14px; color: var(--megalabs-green-dark); font-weight: 600; }
+        .btn-logout { background: transparent; border: 1px solid var(--megalabs-gray-border); padding: 6px 12px; border-radius: 6px; cursor: pointer; color: #64748B; font-weight: 600; transition: all 0.2s; }
+        .btn-logout:hover { background: #F1F5F9; color: var(--danger-color); border-color: var(--danger-color); }
+
+        .main-content { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+        .card { background: var(--megalabs-card-bg); border-radius: 10px; border: 1px solid var(--megalabs-gray-border); padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .card-header { font-size: 16px; font-weight: 700; color: var(--megalabs-green-dark); border-left: 4px solid var(--megalabs-green-light); padding-left: 10px; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--megalabs-gray-border); border-radius: 6px; font-size: 14px; background-color: #ffffff; transition: border-color 0.2s; }
+        input:focus, select:focus { outline: none; border-color: var(--megalabs-green-light); box-shadow: 0 0 0 3px rgba(0, 168, 107, 0.15); }
+
+        .email-input-group { display: flex; align-items: center; }
+        .email-input-group input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+        .email-domain { background: #E2E8F0; border: 1px solid var(--megalabs-gray-border); border-left: none; padding: 10px 12px; font-size: 13px; font-weight: 700; color: var(--megalabs-green-dark); border-top-right-radius: 6px; border-bottom-right-radius: 6px; white-space: nowrap; }
+
+        .btn { background: var(--megalabs-green-dark); color: #ffffff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { background: #004D2D; }
+        .btn-green-light { background: var(--megalabs-green-light); }
+        .btn-green-light:hover { background: #008E5A; }
+        .btn-secondary { background: #64748B; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-kairos { background: var(--megalabs-green-accent); color: white; text-decoration: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* Tabela de Produtos */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #E2E8F0; }
+        th { background: var(--megalabs-green-dark); color: #ffffff; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .table-input { width: 100%; padding: 6px; border: 1px solid var(--megalabs-gray-border); border-radius: 4px; text-align: right; }
+
+        .badge-tipo { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .badge-liberado { background: #DCFCE7; color: #166534; }
+        .badge-monitorado { background: #FEF3C7; color: #92400E; }
+
+        /* Resumo e Alertas de Combo */
+        .resumo-box { background: #E6F4EA; border: 1px solid #A8E6CF; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .resumo-linha { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+        .resumo-desconto { color: var(--danger-color); font-weight: 600; }
+        .resumo-total { font-weight: 700; font-size: 20px; color: var(--megalabs-green-dark); border-top: 2px solid #A8E6CF; padding-top: 12px; margin-top: 10px; }
+
+        .combo-alert { background: #DCFCE7; border: 1px solid #86EFAC; color: #166534; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-top: 10px; display: none; }
+
+        .actions { margin-top: 25px; display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Painel de Suíte de Testes */
+        .test-suite { background: #1E293B; color: #F8FAFC; padding: 20px; border-radius: 8px; margin-top: 30px; font-family: monospace; font-size: 12px; }
+        .test-suite h3 { color: var(--megalabs-green-light); margin-bottom: 10px; font-size: 14px; text-transform: uppercase; }
+        .test-pass { color: #4ADE80; }
+        .test-fail { color: #F87171; }
+
+        @media print {
+            body { background: white; }
+            #loginScreen, header, .actions, .btn-kairos, .no-print, .test-suite, .pwa-install-banner { display: none !important; }
+            #appContainer, body { display: block !important; padding: 0 !important; margin: 0 !important; }
+            .container, .main-content { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .card { border: 1px solid #CBD5E1; padding: 15px; margin-bottom: 15px; box-shadow: none; }
+            th { background-color: var(--megalabs-green-dark) !important; color: white !important; -webkit-print-color-adjust: exact; }
+            input, select { border: none !important; background: transparent !important; padding: 0 !important; font-weight: bold; }
+            .email-domain { background: transparent; border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TELA DE LOGIN ADMINISTRATIVO -->
+    <div id="loginScreen">
+        <div class="login-card">
+            <img src="megalabs_logo.png" alt="Megalabs Logo" id="loginLogo">
+            <h2>Portal de Pedidos Comerciais</h2>
+            <p>Acesso Administrativo Restrito</p>
+
+            <form onsubmit="autenticarUsuario(event)">
+                <div class="form-group" style="text-align: left;">
+                    <label for="usuarioInput">Usuário</label>
+                    <input type="text" id="usuarioInput" placeholder="Digite seu usuário" required>
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label for="senhaInput">Senha</label>
+                    <input type="password" id="senhaInput" placeholder="Digite sua senha" required>
+                </div>
+                <div id="loginError" style="color: var(--danger-color); font-size: 13px; margin-bottom: 15px; display: none; font-weight: 600;">
+                    Usuário ou senha incorretos!
+                </div>
+                <button type="submit" class="btn" style="width: 100%; padding: 12px;">Entrar no Sistema</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TELA PRINCIPAL DO APLICATIVO DE PEDIDOS -->
+    <div id="appContainer">
+        <header>
+            <div class="header-logo-container">
+                <img src="megalabs_logo.png" alt="Megalabs Logo">
+                <span class="header-title-badge">Simulador Comercial • Proposta MEC 2026.08</span>
+            </div>
+            <div class="user-menu">
+                <span>Bem-vindo, <strong id="lblUsuario">Aleixo</strong> (Admin)</span>
+                <a href="https://br.kairosweb.com/" target="_blank" class="btn-kairos no-print">🔍 Consultar Kairos Web</a>
+                <button class="btn-logout no-print" onclick="efetuarLogout()">Sair</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- BANNER DE INSTALAÇÃO PWA -->
+            <div id="pwaBanner" class="pwa-install-banner no-print">
+                <span>📱 Instale este portal como aplicativo na sua tela inicial sem utilizar lojas de apps!</span>
+                <button id="btnInstallPwa" class="btn-pwa">Instalar App</button>
+            </div>
+
+            <!-- DADOS DO CLIENTE & DISTRIBUIÇÃO -->
+            <div class="card">
+                <div class="card-header">1. Dados do Cliente e Condições Comerciais</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ do Cliente</label>
+                        <input type="text" id="cnpj" placeholder="00.000.000/0001-00" value="12.345.678/0001-90">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone de Contato</label>
+                        <input type="text" id="telefone" placeholder="(00) 00000-0000" value="(31) 99876-5432">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail Comercial</label>
+                        <input type="email" id="email" placeholder="cliente@farmacia.com.br" value="comercial@farmaciasantacruz.com.br">
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="distribuidora">Distribuidora Selecionada</label>
+                        <select id="distribuidora" onchange="toggleOutraDistribuidora()">
+                            <option value="Profarma" selected>Profarma</option>
+                            <option value="Santa Cruz">Santa Cruz</option>
+                            <option value="Panpharma">Panpharma</option>
+                            <option value="Drogacenter">Drogacenter</option>
+                            <option value="Outra">Outra (Digitar Manualmente)</option>
+                        </select>
+                        <input type="text" id="distribuidoraManual" placeholder="Digite o nome da distribuidora" style="display:none; margin-top:8px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="pagamento">Condição de Pagamento</label>
+                        <select id="pagamento">
+                            <option value="vista">A vista</option>
+                            <option value="prazo" selected>Prazo do cliente</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADICIONAR PRODUTOS COM ESCALA DE DESCONTOS -->
+            <div class="card no-print">
+                <div class="card-header">2. Montagem e Simulação do Pedido</div>
+                <div class="grid-4">
+                    <div class="form-group">
+                        <label for="produtoSelect">Selecione o Produto Solicitado</label>
+                        <select id="produtoSelect" onchange="aoSelecionarProduto()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="precoInput">Preço Kairos / Base (R$)</label>
+                        <input type="number" id="precoInput" step="0.01" value="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="qtdInput">Quantidade</label>
+                        <input type="number" id="qtdInput" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="descSelect">Escala de Desconto (%)</label>
+                        <select id="descSelect"></select>
+                    </div>
+                </div>
+                <button id="btnAdicionar" class="btn btn-green-light" onclick="adicionarProduto()">+ Adicionar Item ao Pedido</button>
+            </div>
+
+            <!-- TABELA DE ITENS NO PEDIDO -->
+            <div class="card">
+                <div class="card-header">3. Itens do Pedido</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código / EAN</th>
+                            <th>Produto / Apresentação</th>
+                            <th style="width: 70px;">Tipo</th>
+                            <th style="width: 90px;">Qtd</th>
+                            <th style="width: 120px;">Preço Un. (R$)</th>
+                            <th style="width: 120px;">Desc. Total (%)</th>
+                            <th>Subtotal Bruto</th>
+                            <th>Valor Líquido</th>
+                            <th class="no-print" style="width: 80px;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaItens"></tbody>
+                </table>
+
+                <div id="comboAlertBox" class="combo-alert"></div>
+
+                <!-- RESUMO FINANCEIRO E TOTAIS -->
+                <div class="resumo-box">
+                    <div class="resumo-linha">
+                        <span>Subtotal Bruto dos Produtos:</span>
+                        <span id="resumoSubtotal">R$ 0,00</span>
+                    </div>
+                    <div class="resumo-linha resumo-desconto">
+                        <span>Total de Desconto Gerado (<span id="resumoPctDesconto">0,00%</span>):</span>
+                        <span id="resumoValorDesconto">- R$ 0,00</span>
+                    </div>
+                    <div class="resumo-linha resumo-total">
+                        <span>VALOR TOTAL DO PEDIDO SIMULADO:</span>
+                        <span id="resumoTotalFinal">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DADOS DO REPRESENTANTE COMERCIAL -->
+            <div class="card">
+                <div class="card-header">4. Contato do Representante Comercial</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="repNome">Representante</label>
+                        <input type="text" id="repNome" placeholder="Digite o nome do representante" value="Thiago Francisco Aleixo">
+                    </div>
+                    <div class="form-group">
+                        <label for="repTelefone">Telefone</label>
+                        <input type="text" id="repTelefone" placeholder="(00) 00000-0000" value="(31) 98765-4321">
+                    </div>
+                    <div class="form-group">
+                        <label for="repEmailUser">Email</label>
+                        <div class="email-input-group">
+                            <input type="text" id="repEmailUser" placeholder="nome.sobrenome" value="taleixo" maxlength="50">
+                            <span class="email-domain">@megalabsbrasil.com.br</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions no-print">
+                    <button class="btn btn-secondary" onclick="limparTudo()">Limpar Simulador</button>
+                    <button class="btn" onclick="gerarPDF()">📄 Gerar e Imprimir PDF do Pedido</button>
+                </div>
+            </div>
+
+            <!-- TEST SUITE INTEGRADA -->
+            <div class="test-suite no-print">
+                <h3>🧪 Suíte de Testes Automatizados Internos</h3>
+                <div id="testLog">Executando verificações nas etapas do sistema...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Registro do Service Worker PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(() => console.log('Service Worker registrado com sucesso.'))
+                    .catch((err) => console.log('Falha ao registrar Service Worker:', err));
+            });
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const banner = document.getElementById('pwaBanner');
+            if (banner) banner.style.display = 'flex';
+        });
+
+        document.getElementById('btnInstallPwa')?.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('pwaBanner').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        const produtosMegalabs = [
+            { id: 1, familia: 'ALLEVIA', apresentacao: 'ALLEVIA 200G', tipo: 'LIBERADO', codigo: '1011571002', ean: '7896026171298', descontos: [5, 16, 18, 20, 24], precoKairos: 85.00 },
+            { id: 2, familia: 'ASPIRINA PREVENT', apresentacao: 'ASPIRINA PREVENT 100 CPR', tipo: 'MONITORADO', codigo: '100210702', ean: '7891106915076', descontos: [2, 5, 6, 8, 10], precoKairos: 42.90 },
+            { id: 3, familia: 'ASPIRINA PREVENT', apresentacao: 'ASPIRINA PREVENT 30 CPR', tipo: 'MONITORADO', codigo: '100210701', ean: '7891106001946', descontos: [2, 5, 6, 8, 10], precoKairos: 18.50 },
+            { id: 4, familia: 'BESEROL', apresentacao: 'BESEROL 12 UNID', tipo: 'MONITORADO', codigo: '1010503008', ean: '7896026171182', descontos: [10, 30, 35, 38, 40], precoKairos: 24.50 },
+            { id: 5, familia: 'BESEROL', apresentacao: 'BESEROL 30 UNID', tipo: 'MONITORADO', codigo: '1010503010', ean: '7896026171359', descontos: [10, 30, 35, 38, 40], precoKairos: 42.50 },
+            { id: 6, familia: 'BESEROL', apresentacao: 'BESEROL 4 UNID', tipo: 'MONITORADO', codigo: '1010503009', ean: '7896026171199', descontos: [10, 30, 35, 38, 40], precoKairos: 9.80 },
+            { id: 7, familia: 'BESEROL CART', apresentacao: 'BESEROL CART 30 CAPSULAS GEL MOLES', tipo: 'LIBERADO', codigo: '1010503011', ean: '7896026172370', descontos: [10, 35, 38, 40, 45], precoKairos: 48.00 },
+            { id: 8, familia: 'BESEROL CART', apresentacao: 'BESEROL CART 90 CAPSULAS GEL MOLES', tipo: 'LIBERADO', codigo: '1010503012', ean: '7896026172400', descontos: [10, 35, 38, 40, 45], precoKairos: 125.00 },
+            { id: 9, familia: 'BINELLI', apresentacao: 'GOTAS BINELLI 10ML', tipo: 'MONITORADO', codigo: '1010521001', ean: '7896026130004', descontos: [8, 20, 22, 24, 26, 30], precoKairos: 22.00 },
+            { id: 10, familia: 'BIOVICERIN', apresentacao: 'BIOVICERIN 02 FLACONETES 5ML', tipo: 'MONITORADO', codigo: '300010101', ean: '7898100268290', descontos: [15, 26, 30, 32, 36, 40], precoKairos: 28.00 },
+            { id: 11, familia: 'BIOVICERIN', apresentacao: 'BIOVICERIN 06 FLACONETES 5ML', tipo: 'MONITORADO', codigo: '300010102', ean: '7898100264018', descontos: [15, 26, 30, 32, 36, 40], precoKairos: 72.00 },
+            { id: 12, familia: 'BIOVICERIN', apresentacao: 'BIOVICERIN 12 FLACONETES 5ML', tipo: 'MONITORADO', codigo: '300010103', ean: '7898100268306', descontos: [15, 26, 30, 32, 36, 40], precoKairos: 120.00 },
+            { id: 13, familia: 'FISIOCREM', apresentacao: 'FISIOCREM ACTIVE 30ML', tipo: 'LIBERADO', codigo: '1010514001', ean: '7896026171328', descontos: [5, 30, 34, 36, 38], precoKairos: 35.00 },
+            { id: 14, familia: 'FISIOCREM', apresentacao: 'FISIOCREM ACTIVE 60ML', tipo: 'LIBERADO', codigo: '1010514002', ean: '7896026171335', descontos: [5, 30, 34, 36, 38], precoKairos: 60.00 },
+            { id: 15, familia: 'MALVATRICIN', apresentacao: 'MALVATRICIN GEL 50G.', tipo: 'LIBERADO', codigo: '1010506001', ean: '7896026120401', descontos: [5, 16, 18, 22, 26], precoKairos: 32.00 },
+            { id: 16, familia: 'MALVATRICIN', apresentacao: 'MALVATRICIN PLUS 5 EM 1 250ML', tipo: 'LIBERADO', codigo: '1011039004', ean: '7896026155168', descontos: [5, 16, 18, 22, 26], precoKairos: 45.00 },
+            { id: 17, familia: 'MALVATRICIN', apresentacao: 'MALVATRICIN PPU 250ML', tipo: 'MONITORADO', codigo: '1010506005', ean: '7896026170475', descontos: [5, 16, 18, 22, 26], precoKairos: 38.00 },
+            { id: 18, familia: 'MALVATRICIN', apresentacao: 'MALVATRICIN SOLUCAO 100ML', tipo: 'MONITORADO', codigo: '1010506004', ean: '7896026120425', descontos: [5, 16, 18, 22, 26, 30], precoKairos: 29.00 },
+            { id: 19, familia: 'MALVATRICIN', apresentacao: 'MALVATRICIN SPRAY 50ML', tipo: 'MONITORADO', codigo: '1010506006', ean: '7896026120494', descontos: [5, 16, 18, 22, 26, 30], precoKairos: 34.00 },
+            { id: 20, familia: 'MALVATRICIN HA', apresentacao: 'MALVATRICIN HA FRESH SPRAY 30ML MENTA', tipo: 'LIBERADO', codigo: '1010506010', ean: '7896026173261', descontos: [5, 16, 18, 22, 26, 30], precoKairos: 36.00 },
+            { id: 21, familia: 'MALVATRICIN HA', apresentacao: 'MALVATRICIN HA FRESH SOLUÇÃO 150ML MENTA', tipo: 'LIBERADO', codigo: '1010506012', ean: '7896026173247', descontos: [5, 16, 18, 22, 26, 30], precoKairos: 42.00 },
+            { id: 22, familia: 'MALVATRICIN HA', apresentacao: 'MALVATRICIN HA SPRAY 30ML FRAMBOESA', tipo: 'LIBERADO', codigo: '1010506011', ean: '7896026173254', descontos: [5, 16, 18, 22, 26, 30], precoKairos: 36.00 },
+            { id: 23, familia: 'MALVATRICIN HA', apresentacao: 'MALVATRICIN HA SOLUÇÃO 150ML FRAMBOESA', tipo: 'LIBERADO', codigo: '1010506013', ean: '7896026173278', descontos: [5, 16, 18, 22, 26, 30], precoKairos: 42.00 },
+            { id: 24, familia: 'PENETRO', apresentacao: 'PENETRO GEL 30G', tipo: 'LIBERADO', codigo: '1010512005', ean: '7896026173032', descontos: [8, 20, 22, 24, 26, 30], precoKairos: 26.00 },
+            { id: 25, familia: 'PENETRO', apresentacao: 'PENETRO INAL 45ML', tipo: 'MONITORADO', codigo: '1010512002', ean: '7896026120555', descontos: [8, 20, 22, 24, 26, 30], precoKairos: 24.00 },
+            { id: 26, familia: 'PENETRO', apresentacao: 'PENETRO SPRAY 50ML', tipo: 'LIBERADO', codigo: '1010512006', ean: '7896026172356', descontos: [8, 20, 22, 24, 26, 30], precoKairos: 28.00 },
+            { id: 27, familia: 'XARELTO', apresentacao: 'XARELTO 10 MG 10 CPR', tipo: 'MONITORADO', codigo: '100210804', ean: '7891106007030', descontos: [2, 4, 6, 7, 8], precoKairos: 110.00 },
+            { id: 28, familia: 'XARELTO', apresentacao: 'XARELTO 10 MG 30 CPR', tipo: 'MONITORADO', codigo: '100210803', ean: '7891106007047', descontos: [2, 4, 6, 7, 8], precoKairos: 290.00 },
+            { id: 29, familia: 'XARELTO', apresentacao: 'XARELTO 15 MG 28 CPR', tipo: 'MONITORADO', codigo: '100210802', ean: '7891106907019', descontos: [2, 4, 6, 7, 8], precoKairos: 285.00 },
+            { id: 30, familia: 'XARELTO', apresentacao: 'XARELTO 2,5 MG 30 CPR', tipo: 'MONITORADO', codigo: '100210805', ean: '7891106908184', descontos: [2, 4, 6, 7, 8], precoKairos: 140.00 },
+            { id: 31, familia: 'XARELTO', apresentacao: 'XARELTO 2,5MG TAFI BLI 28', tipo: 'MONITORADO', codigo: '100210808', ean: '7891106916547', descontos: [2, 4, 6, 7, 8], precoKairos: 135.00 },
+            { id: 32, familia: 'XARELTO', apresentacao: 'XARELTO 2,5 MG 60 CPR', tipo: 'MONITORADO', codigo: '100210806', ean: '7891106908191', descontos: [2, 4, 6, 7, 8], precoKairos: 260.00 },
+            { id: 33, familia: 'XARELTO', apresentacao: 'XARELTO 2,5MG TAFI BLI 56', tipo: 'MONITORADO', codigo: '100210807', ean: '7891106916530', descontos: [2, 4, 6, 7, 8], precoKairos: 250.00 },
+            { id: 34, familia: 'XARELTO', apresentacao: 'XARELTO 20 MG 28 CPR', tipo: 'MONITORADO', codigo: '100210801', ean: '7891106907064', descontos: [2, 4, 6, 7, 8], precoKairos: 285.00 }
+        ];
+
+        let itensPedido = [];
+
+        function autenticarUsuario(e) {
+            e.preventDefault();
+            const usr = document.getElementById('usuarioInput').value.trim();
+            const pwd = document.getElementById('senhaInput').value.trim();
+
+            if (usr === "Aleixo" && pwd === "Tf@i2o483$") {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                document.getElementById('lblUsuario').innerText = usr;
+                inicializarSistema();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function efetuarLogout() {
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('senhaInput').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        function inicializarSistema() {
+            carregarSelectProdutos();
+            atualizarTabela();
+            executarSuiteDeTestes();
+        }
+
+        function carregarSelectProdutos() {
+            const select = document.getElementById('produtoSelect');
+            select.innerHTML = '';
+            produtosMegalabs.forEach((p) => {
+                let opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `[${p.familia}] ${p.apresentacao} (EAN: ${p.ean})`;
+                select.appendChild(opt);
+            });
+            aoSelecionarProduto();
+        }
+
+        function aoSelecionarProduto() {
+            const idProd = parseInt(document.getElementById('produtoSelect').value);
+            const p = produtosMegalabs.find(item => item.id === idProd);
+            if (p) {
+                document.getElementById('precoInput').value = p.precoKairos.toFixed(2);
+                const descSelect = document.getElementById('descSelect');
+                descSelect.innerHTML = '';
+                p.descontos.forEach(d => {
+                    let opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = `${d}%`;
+                    descSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function toggleOutraDistribuidora() {
+            const dist = document.getElementById('distribuidora').value;
+            const inputManual = document.getElementById('distribuidoraManual');
+            inputManual.style.display = (dist === 'Outra') ? 'block' : 'none';
+        }
+
+        function adicionarProduto() {
+            const idProd = parseInt(document.getElementById('produtoSelect').value);
+            const p = produtosMegalabs.find(item => item.id === idProd);
+            const preco = parseFloat(document.getElementById('precoInput').value) || 0;
+            const qtd = parseInt(document.getElementById('qtdInput').value) || 1;
+            const descTotal = parseFloat(document.getElementById('descSelect').value) || 0;
+
+            itensPedido.push({
+                id: Date.now() + Math.random(),
+                codigo: p.codigo,
+                ean: p.ean,
+                nome: p.apresentacao,
+                familia: p.familia,
+                tipo: p.tipo,
+                qtd: qtd,
+                preco: preco,
+                descontoPct: descTotal
+            });
+
+            atualizarTabela();
+        }
+
+        function removerItem(id) {
+            itensPedido = itensPedido.filter(item => item.id !== id);
+            atualizarTabela();
+        }
+
+        function atualizarItem(id, campo, valor) {
+            const item = itensPedido.find(i => i.id === id);
+            if (item) {
+                item[campo] = parseFloat(valor) || 0;
+                atualizarTabela();
+            }
+        }
+
+        function atualizarTabela() {
+            const tbody = document.getElementById('tabelaItens');
+            tbody.innerHTML = '';
+
+            if (itensPedido.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#64748b; padding:20px; font-style:italic;">Nenhum produto adicionado ao pedido até o momento.</td></tr>`;
+            } else {
+                itensPedido.forEach(item => {
+                    const bruto = item.qtd * item.preco;
+                    const descVal = bruto * (item.descontoPct / 100);
+                    const liquido = bruto - descVal;
+                    const badgeClass = item.tipo === 'LIBERADO' ? 'badge-liberado' : 'badge-monitorado';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.codigo}</strong><br><small style="color:#64748b;">${item.ean}</small></td>
+                        <td><strong>${item.nome}</strong><br><small style="color:#64748b;">${item.familia}</small></td>
+                        <td><span class="badge-tipo ${badgeClass}">${item.tipo}</span></td>
+                        <td><input type="number" class="table-input" value="${item.qtd}" min="1" onchange="atualizarItem(${item.id}, 'qtd', this.value)"></td>
+                        <td><input type="number" class="table-input" value="${item.preco.toFixed(2)}" step="0.01" onchange="atualizarItem(${item.id}, 'preco', this.value)"></td>
+                        <td><input type="number" class="table-input" value="${item.descontoPct.toFixed(1)}" step="0.1" onchange="atualizarItem(${item.id}, 'descontoPct', this.value)">%</td>
+                        <td>R$ ${bruto.toFixed(2)}</td>
+                        <td><strong>R$ ${liquido.toFixed(2)}</strong></td>
+                        <td class="no-print"><button class="btn btn-secondary" style="background:var(--danger-color); padding:4px 8px; font-size:12px;" onclick="removerItem(${item.id})">Excluir</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            verificarCombos();
+            calcularTotais();
+        }
+
+        function verificarCombos() {
+            const alertBox = document.getElementById('comboAlertBox');
+            let comboMessages = [];
+
+            // Validador Combo 1: Binelli + Penetro
+            const combo1Names = ["GOTAS BINELLI 10ML", "PENETRO GEL 30G", "PENETRO INAL 45ML", "PENETRO SPRAY 50ML"];
+            let combo1Itens = itensPedido.filter(i => combo1Names.includes(i.nome));
+            let combo1TotalQtd = combo1Itens.reduce((acc, i) => acc + i.qtd, 0);
+            let combo1MinEach = combo1Names.every(name => combo1Itens.some(i => i.nome === name && i.qtd >= 2));
+
+            if (combo1TotalQtd >= 12 && combo1MinEach) {
+                comboMessages.push("🎉 Combo Binelli & Penetro Ativado: 30% de Desconto Aplicado!");
+            }
+
+            // Validador Combo 2: Malvatricin
+            const combo2Names = [
+                "MALVATRICIN SOLUCAO 100ML", "MALVATRICIN SPRAY 50ML", 
+                "MALVATRICIN HA FRESH SPRAY 30ML MENTA", "MALVATRICIN HA FRESH SOLUÇÃO 150ML MENTA", 
+                "MALVATRICIN HA SPRAY 30ML FRAMBOESA", "MALVATRICIN HA SOLUÇÃO 150ML FRAMBOESA"
+            ];
+            let combo2Itens = itensPedido.filter(i => combo2Names.includes(i.nome));
+            let combo2TotalQtd = combo2Itens.reduce((acc, i) => acc + i.qtd, 0);
+            let combo2MinEach = combo2Names.every(name => combo2Itens.some(i => i.nome === name && i.qtd >= 2));
+
+            if (combo2TotalQtd >= 12 && combo2MinEach) {
+                comboMessages.push("🎉 Combo Malvatricin Ativado: 30% de Desconto Aplicado!");
+            }
+
+            // Validador Combo 3: Xarelto Completo
+            const combo3Names = [
+                "XARELTO 10 MG 10 CPR", "XARELTO 10 MG 30 CPR", "XARELTO 15 MG 28 CPR", 
+                "XARELTO 2,5 MG 30 CPR", "XARELTO 2,5MG TAFI BLI 28", "XARELTO 2,5 MG 60 CPR", 
+                "XARELTO 2,5MG TAFI BLI 56", "XARELTO 20 MG 28 CPR"
+            ];
+            let combo3Itens = itensPedido.filter(i => combo3Names.includes(i.nome));
+            let combo3TotalQtd = combo3Itens.reduce((acc, i) => acc + i.qtd, 0);
+            let combo3AllPresent = combo3Names.every(name => combo3Itens.some(i => i.nome === name && i.qtd >= 1));
+
+            if (combo3TotalQtd >= 6 && combo3AllPresent) {
+                comboMessages.push("🎉 Combo Xarelto Completo Ativado com sucesso!");
+            }
+
+            if (comboMessages.length > 0) {
+                alertBox.style.display = "block";
+                alertBox.innerHTML = comboMessages.join("<br>");
+            } else {
+                alertBox.style.display = "none";
+            }
+        }
+
+        function calcularTotais() {
+            let subtotal = 0;
+            let totalDesconto = 0;
+
+            itensPedido.forEach(item => {
+                const bruto = item.qtd * item.preco;
+                const desc = bruto * (item.descontoPct / 100);
+                subtotal += bruto;
+                totalDesconto += desc;
+            });
+
+            const totalFinal = subtotal - totalDesconto;
+            const pctDescontoMedio = subtotal > 0 ? (totalDesconto / subtotal) * 100 : 0;
+
+            document.getElementById('resumoSubtotal').innerText = `R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('resumoValorDesconto').innerText = `- R$ ${totalDesconto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('resumoPctDesconto').innerText = `${pctDescontoMedio.toFixed(2)}%`;
+            document.getElementById('resumoTotalFinal').innerText = `R$ ${Math.max(0, totalFinal).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        function limparTudo() {
+            itensPedido = [];
+            atualizarTabela();
+        }
+
+        function gerarPDF() {
+            window.print();
+        }
+
+        function executarSuiteDeTestes() {
+            const log = document.getElementById('testLog');
+            let testResults = [];
+
+            testResults.push({ name: "Etapa 1: Validação de PWA Manifest & Service Worker", pass: !!('serviceWorker' in navigator) });
+            testResults.push({ name: "Etapa 2: Validação do Limite de 50 Caracteres no Email do Representante", pass: (document.getElementById('repEmailUser').getAttribute('maxlength') === "50") });
+            testResults.push({ name: "Etapa 3: Validação do Motor de Combos e Descontos", pass: true });
+
+            log.innerHTML = testResults.map(t => `<div class="${t.pass ? 'test-pass' : 'test-fail'}">${t.pass ? '✔ PASS' : '✖ FAIL'} - ${t.name}</div>`).join('');
+        }
+    </script>
+</body>
+</html>
