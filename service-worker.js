@@ -1,4 +1,4 @@
-const CACHE_NAME = 'megalabs-v8';
+const CACHE_NAME = 'megalabs-v9';
 const urlsToCache = [
   './',
   './index.html',

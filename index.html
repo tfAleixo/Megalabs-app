@@ -234,8 +234,12 @@
                         <input type="number" id="qtdInput" min="1" value="1">
                     </div>
                     <div class="form-group">
-                        <label for="descSelect">Escala de Desconto (%)</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label for="descSelect" style="margin-bottom: 0;">Escala de Desconto (%)</label>
+                            <button type="button" id="btnToggleManual" onclick="toggleDescontoManual()" style="background: var(--megalabs-green-accent); color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">Manual</button>
+                        </div>
                         <select id="descSelect"></select>
+                        <input type="number" id="descInputManual" step="0.1" min="0" max="100" placeholder="0.0%" style="display: none;">
                     </div>
                 </div>
                 <button id="btnAdicionar" class="btn btn-green-light" onclick="adicionarProduto()">+ Adicionar Item ao Pedido</button>
@@ -421,6 +425,26 @@
             aoSelecionarProduto();
         }
 
+        
+        function toggleDescontoManual() {
+            const selectEl = document.getElementById('descSelect');
+            const inputEl = document.getElementById('descInputManual');
+            const btnEl = document.getElementById('btnToggleManual');
+
+            if (selectEl.style.display === 'none') {
+                selectEl.style.display = 'block';
+                inputEl.style.display = 'none';
+                btnEl.innerText = 'Manual';
+                btnEl.style.background = 'var(--megalabs-green-accent)';
+            } else {
+                selectEl.style.display = 'none';
+                inputEl.style.display = 'block';
+                inputEl.value = selectEl.value || 0;
+                btnEl.innerText = 'Escala';
+                btnEl.style.background = '#64748B';
+            }
+        }
+
         function aoSelecionarProduto() {
             const idProd = parseInt(document.getElementById('produtoSelect').value);
             const p = produtosMegalabs.find(item => item.id === idProd);
@@ -448,7 +472,8 @@
             const p = produtosMegalabs.find(item => item.id === idProd);
             const preco = parseFloat(document.getElementById('precoInput').value) || 0;
             const qtd = parseInt(document.getElementById('qtdInput').value) || 1;
-            const descTotal = parseFloat(document.getElementById('descSelect').value) || 0;
+            const isManual = document.getElementById('descInputManual').style.display !== 'none';
+            const descTotal = isManual ? (parseFloat(document.getElementById('descInputManual').value) || 0) : (parseFloat(document.getElementById('descSelect').value) || 0);
 
             itensPedido.push({
                 id: Date.now() + Math.random(),
