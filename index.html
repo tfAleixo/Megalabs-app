@@ -31,7 +31,7 @@
 
         /* Estilos da Tela de Login */
         #loginScreen {
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            display: none; justify-content: center; align-items: center; min-height: 100vh;
             background: linear-gradient(135deg, var(--megalabs-green-dark) 0%, #003B22 100%); padding: 20px;
         }
         .login-card {
@@ -157,7 +157,7 @@
     </div>
 
     <!-- TELA PRINCIPAL DO APLICATIVO DE PEDIDOS -->
-    <div id="appContainer">
+    <div id="appContainer" style="display: block;">
         <header>
             <div class="header-logo-container">
                 <img src="megalabs_logo.png" alt="Megalabs Logo">
@@ -166,7 +166,7 @@
             <div class="user-menu">
                 <span>Bem-vindo, <strong id="lblUsuario">Aleixo</strong> (Admin)</span>
                 <a href="https://br.kairosweb.com/" target="_blank" class="btn-kairos no-print">🔍 Consultar Kairos Web</a>
-                <button class="btn-logout no-print" onclick="efetuarLogout()">Sair</button>
+                
             </div>
         </header>
 
@@ -214,6 +214,11 @@
                             <option value="prazo" selected>Prazo do cliente</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="anexosInput">Anexar Documentos / Comprovantes (Opcional)</label>
+                    <input type="file" id="anexosInput" multiple accept="image/*,.pdf,.doc,.docx,.xlsx" onchange="gerenciarAnexos(event)">
+                    <div id="listaAnexos" style="margin-top: 8px; font-size: 13px; color: #475569;"></div>
                 </div>
             </div>
 
@@ -308,7 +313,71 @@
                 </div>
             </div>
 
-            <!-- TEST SUITE INTEGRADA -->
+            
+            <!-- LINK E PAINEL ADMINISTRATIVO NO RODAPÉ -->
+            <footer style="text-align: center; margin: 40px 0 20px 0; padding-top: 20px; border-top: 1px solid #E2E8F0;" class="no-print">
+                <p style="font-size: 13px; color: #64748B;">Megalabs Farmacêutica © 2026 • Portal Comercial</p>
+                <a href="#" onclick="abrirLoginAdmin(event)" style="font-size: 13px; color: var(--megalabs-green-dark); font-weight: 700; text-decoration: underline; margin-top: 5px; display: inline-block;">🔐 Painel Administrativo</a>
+            </footer>
+
+            <!-- MODAL DE PROPOSTA SALVA COM CÓDIGO ÚNICO -->
+            <div id="modalCodigoNuem" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 480px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <div style="font-size: 40px; margin-bottom: 10px;">☁️</div>
+                    <h3 style="color: var(--megalabs-green-dark); margin-bottom: 10px;">Pedido Salvo na Nuvem com Sucesso!</h3>
+                    <p style="font-size: 14px; color: #475569; margin-bottom: 15px;">Sua proposta comercial foi gravada no servidor e um código de acesso exclusivo foi gerado:</p>
+                    <div id="boxCodigoUnico" style="background: #E6F4EA; border: 2px dashed var(--megalabs-green-light); padding: 15px; border-radius: 8px; font-size: 24px; font-weight: 800; color: var(--megalabs-green-dark); letter-spacing: 2px; margin-bottom: 20px;"></div>
+                    <button class="btn btn-green-light" onclick="fecharModalEConsultarOuImprimir()" style="width: 100%;">Imprimir PDF do Pedido</button>
+                </div>
+            </div>
+
+            <!-- MODAL DE LOGIN / PAINEL ADMINISTRATIVO -->
+            <div id="modalAdmin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+                <div style="background: white; padding: 30px; border-radius: 12px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--megalabs-green-light); padding-bottom: 10px;">
+                        <h2 style="color: var(--megalabs-green-dark); font-size: 18px;">🔐 Painel Administrativo de Propostas (Nuvem)</h2>
+                        <button onclick="fecharAdmin()" style="background: none; border: none; font-size: 20px; cursor: pointer; font-weight: bold;">✕</button>
+                    </div>
+
+                    <!-- FORMULARIO LOGIN ADMIN -->
+                    <div id="adminLoginForm">
+                        <p style="font-size: 13px; color: #64748B; margin-bottom: 15px;">Digite as credenciais de administrador para visualizar o histórico de propostas:</p>
+                        <div class="form-group">
+                            <label>Usuário</label>
+                            <input type="text" id="adminUser" placeholder="Usuário">
+                        </div>
+                        <div class="form-group">
+                            <label>Senha</label>
+                            <input type="password" id="adminPass" placeholder="Senha">
+                        </div>
+                        <div id="adminAuthError" style="color: var(--danger-color); font-size: 13px; font-weight: bold; display: none; margin-bottom: 10px;">Credenciais inválidas!</div>
+                        <button class="btn" style="width: 100%;" onclick="autenticarAdmin()">Acessar Painel</button>
+                    </div>
+
+                    <!-- CONTEUDO DO PAINEL ADMIN -->
+                    <div id="adminContent" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-weight: bold; color: var(--megalabs-green-dark);">Histórico de Pedidos Registrados na Nuvem</span>
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;" onclick="deslogarAdmin()">Sair do Admin</button>
+                        </div>
+                        <table style="width: 100%; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th>Código Único</th>
+                                    <th>Data / Hora</th>
+                                    <th>Cliente / CNPJ</th>
+                                    <th>Total Pedido</th>
+                                    <th>Anexos</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaPropostasAdmin"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<!-- TEST SUITE INTEGRADA -->
             <div class="test-suite no-print">
                 <h3>🧪 Suíte de Testes Automatizados Internos</h3>
                 <div id="testLog">Executando verificações nas etapas do sistema...</div>
@@ -345,6 +414,124 @@
                 });
             }
         });
+
+        
+        // Armazenamento em nuvem local (localStorage/Cloud Sync Mock)
+        let propostasNuvem = JSON.parse(localStorage.getItem('megalabs_propostas_nuvem')) || [];
+        let anexosCarregados = [];
+
+        function gerenciarAnexos(event) {
+            const files = event.target.files;
+            const lista = document.getElementById('listaAnexos');
+            anexosCarregados = [];
+            lista.innerHTML = '';
+
+            for (let i = 0; i < files.length; i++) {
+                anexosCarregados.push(files[i].name);
+                lista.innerHTML += `<div>📎 <strong>${files[i].name}</strong> (${(files[i].size / 1024).toFixed(1)} KB)</div>`;
+            }
+        }
+
+        function gerarCodigoUnico() {
+            const sufixo = Math.floor(1000 + Math.random() * 9000);
+            const ano = new Date().getFullYear();
+            return `MEC-${ano}-${sufixo}`;
+        }
+
+        let ultimoCodigoGerado = "";
+
+        function gerarPDF() {
+            if (itensPedido.length === 0) {
+                alert("Adicione pelo menos um produto ao pedido antes de gerar o PDF.");
+                return;
+            }
+
+            const codUnico = gerarCodigoUnico();
+            ultimoCodigoGerado = codUnico;
+
+            const cnpj = document.getElementById('cnpj').value;
+            const distribuidora = document.getElementById('distribuidora').value === 'Outra' ? document.getElementById('distribuidoraManual').value : document.getElementById('distribuidora').value;
+            const subtotalText = document.getElementById('resumoSubtotal').innerText;
+            const totalText = document.getElementById('resumoTotalFinal').innerText;
+
+            const novaProposta = {
+                codigo: codUnico,
+                dataHora: new Date().toLocaleString('pt-BR'),
+                cnpj: cnpj,
+                distribuidora: distribuidora,
+                subtotal: subtotalText,
+                total: totalText,
+                itensCount: itensPedido.length,
+                anexos: anexosCarregados.slice()
+            };
+
+            propostasNuvem.unshift(novaProposta);
+            localStorage.setItem('megalabs_propostas_nuvem', JSON.stringify(propostasNuvem));
+
+            // Exibir Modal do Código Único
+            document.getElementById('boxCodigoUnico').innerText = codUnico;
+            document.getElementById('modalCodigoNuem').style.display = 'flex';
+        }
+
+        function fecharModalEConsultarOuImprimir() {
+            document.getElementById('modalCodigoNuem').style.display = 'none';
+            window.print();
+        }
+
+        function abrirLoginAdmin(e) {
+            if (e) e.preventDefault();
+            document.getElementById('modalAdmin').style.display = 'flex';
+            document.getElementById('adminLoginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('adminAuthError').style.display = 'none';
+        }
+
+        function fecharAdmin() {
+            document.getElementById('modalAdmin').style.display = 'none';
+        }
+
+        function autenticarAdmin() {
+            const u = document.getElementById('adminUser').value.trim();
+            const p = document.getElementById('adminPass').value.trim();
+
+            if (u === "Aleixo" && p === "Tf@i2o483$") {
+                document.getElementById('adminLoginForm').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                renderizarTabelaAdmin();
+            } else {
+                document.getElementById('adminAuthError').style.display = 'block';
+            }
+        }
+
+        function deslogarAdmin() {
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+            document.getElementById('adminLoginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+        }
+
+        function renderizarTabelaAdmin() {
+            const tbody = document.getElementById('tabelaPropostasAdmin');
+            tbody.innerHTML = '';
+
+            if (propostasNuvem.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 15px; color:#64748b;">Nenhuma proposta gerada até o momento.</td></tr>`;
+                return;
+            }
+
+            propostasNuvem.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong style="color:var(--megalabs-green-dark);">${p.codigo}</strong></td>
+                    <td>${p.dataHora}</td>
+                    <td>${p.cnpj}<br><small style="color:#64748b;">${p.distribuidora}</small></td>
+                    <td><strong>${p.total}</strong></td>
+                    <td>${p.anexos && p.anexos.length > 0 ? p.anexos.map(a => `📎 ${a}`).join('<br>') : '<span style="color:#94a3b8;">Nenhum</span>'}</td>
+                    <td><button class="btn btn-green-light" style="padding: 2px 8px; font-size: 11px;" onclick="alert('Código de Acesso Cloud: ${p.codigo}\nTotal: ${p.total}')">Ver Detalhes</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
         const produtosMegalabs = [
             { id: 1, familia: 'ALLEVIA', apresentacao: 'ALLEVIA 200G', tipo: 'LIBERADO', codigo: '1011571002', ean: '7896026171298', descontos: [5, 16, 18, 20, 24], precoKairos: 85.00 },
