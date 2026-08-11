@@ -303,7 +303,7 @@
                     </div>
                     <div class="form-group">
                         <label for="repEmailUser">Email</label>
-                        <input type="email" id="repEmailUser" placeholder="nome.sobrenome@megalabsbrasil.com.br" value=" " maxlength="80">
+                        <input type="email" id="repEmailUser" placeholder="nome.sobrenome@megalabsbrasil.com.br" value="   " maxlength="80">
                     </div>
                 </div>
 
@@ -593,6 +593,11 @@
             document.getElementById('senhaInput').value = '';
             document.getElementById('loginError').style.display = 'none';
         }
+
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            inicializarSistema();
+        });
 
         function inicializarSistema() {
             carregarSelectProdutos();
